@@ -162,8 +162,8 @@ class OCRService:
             self._create_field(ocr_result, "Father Name", fname_match.group(1).strip(), 0.7, True, fname_match.group(1).strip(), [])
 
         # PAN Number
-        # More relaxed regex for PAN (sometimes O is read as 0, or I as 1)
-        pan_match = re.search(r'\b[A-Z0-9]{5}[0-9O]{4}[A-Z0-9]\b', full_text, re.IGNORECASE)
+        # More relaxed regex for PAN (OCR might read digits as letters like G instead of 6, O instead of 0)
+        pan_match = re.search(r'\b[A-Z]{5}[0-9OIGS]{4}[A-Z]\b', full_text, re.IGNORECASE)
         if pan_match:
             val = pan_match.group(0).upper()
             is_valid = re.match(r'^[A-Z]{5}[0-9]{4}[A-Z]$', val) is not None
