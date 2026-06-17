@@ -37,10 +37,17 @@ class JobOrchestrator:
             docs = self.db.query(Document).filter(Document.applicant_id == job.applicant_id).all()
             for doc in docs:
                 classifier.classify_document(doc.document_id)
+                
+            # OCR Extraction Phase
+            self._update_state(job, "processing", "ocr")
+            from backend.app.services.ocr import OCRService
+            ocr_svc = OCRService(self.db)
+            for doc in docs:
+                ocr_svc.execute_ocr(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase3_complete"
+            job.stage = "phase4_complete"
             job.progress_pct = 100
             self.db.commit()
             

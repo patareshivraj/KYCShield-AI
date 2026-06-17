@@ -50,6 +50,7 @@ class Document(Base):
     pages = relationship("DocumentPage", back_populates="document")
     quality_profile = relationship("QualityProfile", back_populates="document", uselist=False)
     classification = relationship("DocumentClassification", back_populates="document", uselist=False)
+    ocr_result = relationship("OCRResult", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -90,3 +91,41 @@ class DocumentClassification(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     document = relationship("Document", back_populates="classification")
+
+class OCRResult(Base):
+    __tablename__ = "ocr_results"
+    
+    ocr_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    engine_used = Column(String)
+    overall_confidence = Column(Float)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    document = relationship("Document", back_populates="ocr_result")
+    pages = relationship("OCRPage", back_populates="ocr_result")
+    fields = relationship("ExtractedField", back_populates="ocr_result")
+
+class OCRPage(Base):
+    __tablename__ = "ocr_pages"
+    
+    ocr_page_id = Column(String, primary_key=True, default=generate_uuid)
+    ocr_id = Column(String, ForeignKey("ocr_results.ocr_id"))
+    page_index = Column(Integer)
+    page_confidence = Column(Float)
+    raw_text = Column(String)
+    words = Column(JSON)  # List of dicts with text, bbox, confidence
+    
+    ocr_result = relationship("OCRResult", back_populates="pages")
+
+class ExtractedField(Base):
+    __tablename__ = "extracted_fields"
+    
+    field_id = Column(String, primary_key=True, default=generate_uuid)
+    ocr_id = Column(String, ForeignKey("ocr_results.ocr_id"))
+    field_name = Column(String)
+    field_value = Column(String)
+    confidence = Column(Float)
+    is_valid = Column(Boolean, default=True)
+    evidence = Column(JSON)  # {source_text, bbox, page_index}
+    
+    ocr_result = relationship("OCRResult", back_populates="fields")
