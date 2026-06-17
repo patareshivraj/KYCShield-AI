@@ -72,10 +72,17 @@ class JobOrchestrator:
             comp_svc = CompressionForensicsService(self.db)
             for doc in docs:
                 comp_svc.analyze_document(doc.document_id)
+                
+            # Evidence Fusion Phase
+            self._update_state(job, "processing", "fusion")
+            from backend.app.services.fusion import EvidenceFusionService
+            fusion_svc = EvidenceFusionService(self.db)
+            for doc in docs:
+                fusion_svc.analyze_document(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase8_complete"
+            job.stage = "phase9_complete"
             job.progress_pct = 100
             self.db.commit()
             

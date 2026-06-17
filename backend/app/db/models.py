@@ -55,6 +55,7 @@ class Document(Base):
     ela_result = relationship("ELAResult", back_populates="document", uselist=False)
     noise_result = relationship("NoiseResult", back_populates="document", uselist=False)
     compression_result = relationship("CompressionResult", back_populates="document", uselist=False)
+    fusion_result = relationship("FusionResult", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -329,4 +330,44 @@ class CompressionFinding(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     compression_result = relationship("CompressionResult", back_populates="findings")
+
+class FusionResult(Base):
+    __tablename__ = "fusion_results"
+    
+    fusion_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    fusion_summary = Column(JSON)  # total_clusters, document_level_clusters, field_level_clusters, signal_breakdown
+    
+    document = relationship("Document", back_populates="fusion_result")
+    clusters = relationship("EvidenceCluster", back_populates="fusion_result")
+
+class EvidenceCluster(Base):
+    __tablename__ = "evidence_clusters"
+    
+    cluster_id = Column(String, primary_key=True, default=generate_uuid)
+    fusion_id = Column(String, ForeignKey("fusion_results.fusion_id"))
+    cluster_type = Column(String)  # document_level | field_level | spatial
+    affected_fields = Column(JSON)  # ["PAN Number"]
+    signals = Column(JSON)  # ["S06", "S07", "S08"]
+    primary_signal = Column(String)
+    evidence_strength = Column(Float)  # 0.0 -> 1.0
+    bbox = Column(JSON, nullable=True)  # Union bounding box
+    investigator_summary = Column(String)
+    
+    fusion_result = relationship("FusionResult", back_populates="clusters")
+    members = relationship("ClusterMember", back_populates="cluster")
+
+class ClusterMember(Base):
+    __tablename__ = "cluster_members"
+    
+    member_id = Column(String, primary_key=True, default=generate_uuid)
+    cluster_id = Column(String, ForeignKey("evidence_clusters.cluster_id"))
+    signal_id = Column(String)
+    finding_id = Column(String)
+    finding_type = Column(String)
+    severity = Column(String)
+    confidence = Column(Float)
+    
+    cluster = relationship("EvidenceCluster", back_populates="members")
 

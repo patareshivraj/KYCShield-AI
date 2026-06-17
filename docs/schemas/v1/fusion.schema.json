@@ -1,0 +1,40 @@
+{
+  "$id": "https://kycshield.ai/schemas/v1/fusion.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FusionResult",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "fusion_id": { "type": "string", "format": "uuid" },
+    "document_id": { "type": "string", "format": "uuid" },
+    "fusion_summary": {
+      "type": "object",
+      "properties": {
+        "total_clusters": { "type": "integer" },
+        "document_level_clusters": { "type": "integer" },
+        "field_level_clusters": { "type": "integer" },
+        "signal_breakdown": { "type": "object" }
+      }
+    },
+    "clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cluster_id": { "type": "string", "format": "uuid" },
+          "cluster_type": { "type": "string" },
+          "affected_fields": { "type": "array", "items": { "type": "string" } },
+          "signals": { "type": "array", "items": { "type": "string" } },
+          "primary_signal": { "type": "string" },
+          "evidence_strength": { "type": "number", "minimum": 0, "maximum": 1 },
+          "bbox": { "type": "array", "items": { "type": "number" } },
+          "investigator_summary": { "type": "string" },
+          "members": { "type": "array", "items": { "type": "object" } }
+        }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schema_version", "fusion_id", "document_id", "created_at"],
+  "additionalProperties": false
+}

@@ -190,6 +190,10 @@ class CompressionForensicsService:
             severity = "HIGH"
             confidence = 0.95
             
+        # FILTER: Prevent DB explosion. Only save if severity is MEDIUM/HIGH or there is multi-signal/OCR overlap.
+        if severity == "LOW" and not overlap_ocr and len(supporting_signals) == 0:
+            return
+            
         finding = CompressionFinding(
             compression_id=comp_result.compression_id,
             signal_id="S08",

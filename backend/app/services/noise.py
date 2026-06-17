@@ -163,6 +163,10 @@ class NoiseForensicsService:
             severity = "HIGH"
             confidence = 0.95
             
+        # FILTER: Prevent DB explosion. Only save if severity is MEDIUM/HIGH or there is multi-signal/OCR overlap.
+        if severity == "LOW" and not overlap_ocr and not overlap_ela:
+            return
+            
         finding = NoiseFinding(
             noise_id=noise_result.noise_id,
             signal_id="S07",
