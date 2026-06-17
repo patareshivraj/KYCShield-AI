@@ -51,6 +51,7 @@ class Document(Base):
     quality_profile = relationship("QualityProfile", back_populates="document", uselist=False)
     classification = relationship("DocumentClassification", back_populates="document", uselist=False)
     ocr_result = relationship("OCRResult", back_populates="document", uselist=False)
+    forensic_result = relationship("ForensicResult", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -129,3 +130,40 @@ class ExtractedField(Base):
     evidence = Column(JSON)  # {source_text, bbox, page_index}
     
     ocr_result = relationship("OCRResult", back_populates="fields")
+
+class ForensicResult(Base):
+    __tablename__ = "forensic_results"
+    
+    forensic_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    document = relationship("Document", back_populates="forensic_result")
+    metadata_snapshot = relationship("MetadataSnapshot", back_populates="forensic_result", uselist=False)
+    findings = relationship("ForensicFinding", back_populates="forensic_result")
+
+class MetadataSnapshot(Base):
+    __tablename__ = "metadata_snapshots"
+    
+    snapshot_id = Column(String, primary_key=True, default=generate_uuid)
+    forensic_id = Column(String, ForeignKey("forensic_results.forensic_id"), unique=True)
+    file_type = Column(String)  # image | pdf
+    raw_metadata = Column(JSON)  # EXIF tags, PDF info dict
+    
+    forensic_result = relationship("ForensicResult", back_populates="metadata_snapshot")
+
+class ForensicFinding(Base):
+    __tablename__ = "forensic_findings"
+    
+    finding_id = Column(String, primary_key=True, default=generate_uuid)
+    forensic_id = Column(String, ForeignKey("forensic_results.forensic_id"))
+    signal_id = Column(String)  # S04, S05, S06, etc.
+    finding_name = Column(String)
+    severity = Column(String)  # INFO, LOW, MEDIUM, HIGH
+    confidence = Column(Float)
+    evidence = Column(JSON)  # Key-value evidence
+    source = Column(String)  # EXIF, PDF_DICT, OCR_COMPARISON
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    forensic_result = relationship("ForensicResult", back_populates="findings")
+

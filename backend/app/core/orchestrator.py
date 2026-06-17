@@ -44,10 +44,17 @@ class JobOrchestrator:
             ocr_svc = OCRService(self.db)
             for doc in docs:
                 ocr_svc.execute_ocr(doc.document_id)
+                
+            # Forensics Phase
+            self._update_state(job, "processing", "forensics")
+            from backend.app.services.forensics import MetadataForensicsService
+            forensics_svc = MetadataForensicsService(self.db)
+            for doc in docs:
+                forensics_svc.analyze_document(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase4_complete"
+            job.stage = "phase5_complete"
             job.progress_pct = 100
             self.db.commit()
             
