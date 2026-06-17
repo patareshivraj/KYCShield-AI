@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kycshield.ai/schemas/v1/analysis_result.schema.json",
+  "title": "AnalysisResult",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "analysis_id",
+    "applicant_id",
+    "job_id",
+    "status",
+    "analyzer_version",
+    "ruleset_version",
+    "documents",
+    "quality_profiles",
+    "findings",
+    "cross_document_findings",
+    "document_risk_scores",
+    "applicant_risk_score",
+    "evidence_index",
+    "timing",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "analysis_id": { "type": "string", "format": "uuid" },
+    "applicant_id": { "type": "string", "format": "uuid" },
+    "job_id": { "type": "string", "format": "uuid" },
+    "status": { "type": "string", "enum": ["reported", "failed", "inconclusive"] },
+    "analyzer_version": { "type": "string" },
+    "ruleset_version": { "type": "string" },
+    "documents": {
+      "type": "array",
+      "items": { "$ref": "document.schema.json" }
+    },
+    "quality_profiles": {
+      "type": "array",
+      "items": { "$ref": "quality_profile.schema.json" }
+    },
+    "extracted_fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "string" },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    },
+    "signal_results": {
+      "type": "array",
+      "items": { "$ref": "signal_result.schema.json" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "finding.schema.json" }
+    },
+    "cross_document_findings": {
+      "type": "array",
+      "items": { "$ref": "cross_document_finding.schema.json" }
+    },
+    "document_risk_scores": {
+      "type": "array",
+      "items": { "$ref": "risk_score.schema.json" }
+    },
+    "applicant_risk_score": { "$ref": "risk_score.schema.json" },
+    "evidence_index": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["storage_ref", "mime_type", "evidence_type"],
+        "properties": {
+          "storage_ref": { "type": "string" },
+          "mime_type": { "type": "string" },
+          "evidence_type": { "type": "string" }
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "required": ["total_ms"],
+      "properties": {
+        "total_ms": { "type": "integer", "minimum": 0 },
+        "per_stage_ms": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

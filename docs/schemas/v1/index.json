@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "description": "JSON Schema index for KYCShield AI v1 contracts",
+  "schemas": [
+    "applicant.schema.json",
+    "document.schema.json",
+    "document_page.schema.json",
+    "quality_profile.schema.json",
+    "signal_result.schema.json",
+    "finding.schema.json",
+    "cross_document_finding.schema.json",
+    "evidence.schema.json",
+    "risk_score.schema.json",
+    "analysis_result.schema.json",
+    "error.schema.json"
+  ]
+}

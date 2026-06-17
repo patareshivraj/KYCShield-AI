@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kycshield.ai/schemas/v1/quality_profile.schema.json",
+  "title": "QualityProfile",
+  "type": "object",
+  "required": ["schema_version", "document_id", "overall_gate", "overall_score", "metrics", "confidence_cap_tier_c", "signal_id"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "document_id": { "type": "string", "format": "uuid" },
+    "overall_gate": { "type": "string", "enum": ["pass", "warn", "fail"] },
+    "overall_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "metrics": {
+      "type": "object",
+      "required": ["blur", "resolution", "rotation", "crop_completeness", "exposure"],
+      "properties": {
+        "blur": { "$ref": "#/$defs/metricGate" },
+        "resolution": {
+          "allOf": [{ "$ref": "#/$defs/metricGate" }],
+          "properties": {
+            "width_px": { "type": "integer" },
+            "height_px": { "type": "integer" }
+          }
+        },
+        "rotation": {
+          "allOf": [{ "$ref": "#/$defs/metricGate" }],
+          "properties": {
+            "skew_degrees": { "type": "number" }
+          }
+        },
+        "crop_completeness": { "$ref": "#/$defs/metricGate" },
+        "exposure": {
+          "type": "object",
+          "required": ["overexposure", "underexposure", "gate"],
+          "properties": {
+            "overexposure": { "type": "number", "minimum": 0, "maximum": 1 },
+            "underexposure": { "type": "number", "minimum": 0, "maximum": 1 },
+            "gate": { "type": "string", "enum": ["pass", "warn", "fail"] }
+          }
+        }
+      }
+    },
+    "confidence_cap_tier_c": { "type": "number", "minimum": 0, "maximum": 1 },
+    "limitations": { "type": "string" },
+    "signal_id": { "type": "string", "const": "S00" }
+  },
+  "$defs": {
+    "metricGate": {
+      "type": "object",
+      "required": ["score", "gate"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "gate": { "type": "string", "enum": ["pass", "warn", "fail"] }
+      }
+    }
+  }
+}

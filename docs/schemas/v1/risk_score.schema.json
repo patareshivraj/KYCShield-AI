@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kycshield.ai/schemas/v1/risk_score.schema.json",
+  "title": "RiskScore",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scope",
+    "scope_id",
+    "risk_index",
+    "band",
+    "confidence_qualifier",
+    "contributing_findings",
+    "methodology_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "scope": { "type": "string", "enum": ["document", "applicant"] },
+    "scope_id": { "type": "string", "format": "uuid" },
+    "risk_index": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "band": { "type": "string", "enum": ["low", "review", "high", "inconclusive"] },
+    "confidence_qualifier": { "type": "string", "enum": ["high", "medium", "low"] },
+    "contributing_findings": {
+      "type": "array",
+      "items": { "type": "string", "format": "uuid" }
+    },
+    "quality_constrained": { "type": "boolean", "default": false },
+    "inconclusive_reason": { "type": "string" },
+    "methodology_version": { "type": "string" }
+  }
+}

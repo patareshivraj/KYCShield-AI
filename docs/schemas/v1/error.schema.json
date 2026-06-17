@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kycshield.ai/schemas/v1/error.schema.json",
+  "title": "Error",
+  "type": "object",
+  "required": ["schema_version", "error_code", "message", "request_id"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "VALIDATION_ERROR",
+        "UNSUPPORTED_FORMAT",
+        "UNSUPPORTED_BANK",
+        "JOB_NOT_FOUND",
+        "APPLICANT_NOT_FOUND",
+        "PIPELINE_FAILED",
+        "PAYLOAD_TOO_LARGE",
+        "JOB_NOT_READY"
+      ]
+    },
+    "message": { "type": "string" },
+    "details": { "type": "object" },
+    "request_id": { "type": "string", "format": "uuid" }
+  }
+}

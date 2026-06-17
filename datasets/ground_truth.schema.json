@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kycshield.ai/schemas/v1/ground_truth.schema.json",
+  "title": "GroundTruth",
+  "type": "object",
+  "required": ["schema_version", "sample_id", "expected_band"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "sample_id": { "type": "string" },
+    "expected_band": {
+      "type": "string",
+      "enum": ["low", "review", "high", "inconclusive"]
+    },
+    "expected_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category", "severity_min"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "visual_forgery",
+              "metadata_manipulation",
+              "content_manipulation",
+              "layout_manipulation",
+              "synthetic_generation",
+              "quality_gate"
+            ]
+          },
+          "severity_min": {
+            "type": "string",
+            "enum": ["informational", "low", "medium", "high", "critical"]
+          },
+          "region": {
+            "type": "object",
+            "properties": {
+              "page_index": { "type": "integer", "minimum": 0 },
+              "bbox": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "field_name": { "type": "string" }
+            }
+          },
+          "signals_expected": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^S[0-9]{2}$" }
+          }
+        }
+      }
+    },
+    "expected_signals": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "severity_min": {
+            "type": "string",
+            "enum": ["none", "informational", "low", "medium", "high", "critical"]
+          }
+        }
+      }
+    },
+    "quality_gate_expected": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "notes": { "type": "string" }
+  }
+}

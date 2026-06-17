@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kycshield.ai/schemas/v1/document.schema.json",
+  "title": "Document",
+  "type": "object",
+  "required": ["schema_version", "document_id", "applicant_id", "document_type", "source_format", "source_checksum_sha256", "page_count", "pages", "created_at"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "document_id": { "type": "string", "format": "uuid" },
+    "applicant_id": { "type": "string", "format": "uuid" },
+    "document_type": { "type": "string", "enum": ["aadhaar", "pan", "bank_statement"] },
+    "bank_id": {
+      "type": ["string", "null"],
+      "enum": ["sbi", "hdfc", "icici", "axis", "kotak", null]
+    },
+    "source_format": { "type": "string", "enum": ["jpg", "jpeg", "png", "pdf"] },
+    "source_checksum_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "page_count": { "type": "integer", "minimum": 1 },
+    "pages": {
+      "type": "array",
+      "items": { "type": "string", "format": "uuid" }
+    },
+    "file_metadata": { "type": "object" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}
