@@ -49,6 +49,7 @@ class Document(Base):
     applicant = relationship("Applicant", back_populates="documents")
     pages = relationship("DocumentPage", back_populates="document")
     quality_profile = relationship("QualityProfile", back_populates="document", uselist=False)
+    classification = relationship("DocumentClassification", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -76,3 +77,16 @@ class QualityProfile(Base):
     limitations = Column(String, nullable=True)
     
     document = relationship("Document", back_populates="quality_profile")
+
+class DocumentClassification(Base):
+    __tablename__ = "document_classifications"
+    
+    classification_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    document_type = Column(String)  # aadhaar | pan | bank_statement | unknown
+    confidence = Column(Float)
+    classifier_version = Column(String, default="1.0.0")
+    signals = Column(JSON)  # {matched_keywords: [], matched_patterns: []}
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    document = relationship("Document", back_populates="classification")

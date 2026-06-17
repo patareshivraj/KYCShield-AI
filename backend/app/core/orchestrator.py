@@ -28,8 +28,21 @@ class JobOrchestrator:
             self._update_state(job, "processing", "quality")
             self.quality.assess_job(job_id)
             
-            # Stop here for Phase 2 scope
-            self._update_state(job, "analyzed", "phase2_complete")
+            # Classification Phase
+            self._update_state(job, "processing", "classification")
+            from backend.app.services.classification import DocumentClassifier
+            classifier = DocumentClassifier(self.db)
+            
+            from backend.app.db.models import Document
+            docs = self.db.query(Document).filter(Document.applicant_id == job.applicant_id).all()
+            for doc in docs:
+                classifier.classify_document(doc.document_id)
+            
+            # Job Complete
+            job.status = "analyzed"
+            job.stage = "phase3_complete"
+            job.progress_pct = 100
+            self.db.commit()
             
         except Exception as e:
             logger.exception("Job failed")
