@@ -56,6 +56,7 @@ class Document(Base):
     noise_result = relationship("NoiseResult", back_populates="document", uselist=False)
     compression_result = relationship("CompressionResult", back_populates="document", uselist=False)
     fusion_result = relationship("FusionResult", back_populates="document", uselist=False)
+    risk_assessment = relationship("DocumentRiskAssessment", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -370,4 +371,47 @@ class ClusterMember(Base):
     confidence = Column(Float)
     
     cluster = relationship("EvidenceCluster", back_populates="members")
+
+class DocumentRiskAssessment(Base):
+    __tablename__ = "document_risk_assessments"
+    
+    assessment_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    risk_score = Column(Float)  # 0 to 100
+    risk_level = Column(String) # LOW, MODERATE, HIGH, CRITICAL
+    
+    executive_summary = Column(String)
+    investigator_summary = Column(String)
+    technical_summary = Column(String)
+    
+    document = relationship("Document", back_populates="risk_assessment")
+    factors = relationship("RiskFactor", back_populates="assessment")
+    critical_clusters = relationship("RiskContribution", back_populates="assessment")
+
+class RiskFactor(Base):
+    __tablename__ = "risk_factors"
+    
+    factor_id = Column(String, primary_key=True, default=generate_uuid)
+    assessment_id = Column(String, ForeignKey("document_risk_assessments.assessment_id"))
+    factor_name = Column(String)  # e.g. identity_field_tampering_risk
+    contribution_score = Column(Float)
+    description = Column(String)
+    
+    assessment = relationship("DocumentRiskAssessment", back_populates="factors")
+
+class RiskContribution(Base):
+    __tablename__ = "risk_contributions"
+    
+    contribution_id = Column(String, primary_key=True, default=generate_uuid)
+    assessment_id = Column(String, ForeignKey("document_risk_assessments.assessment_id"))
+    cluster_id = Column(String, ForeignKey("evidence_clusters.cluster_id"))
+    
+    risk_contribution_score = Column(Float)
+    rank = Column(Integer)
+    explanation = Column(String)
+    
+    assessment = relationship("DocumentRiskAssessment", back_populates="critical_clusters")
+    cluster = relationship("EvidenceCluster")
 

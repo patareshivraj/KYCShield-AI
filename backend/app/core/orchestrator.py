@@ -79,10 +79,17 @@ class JobOrchestrator:
             fusion_svc = EvidenceFusionService(self.db)
             for doc in docs:
                 fusion_svc.analyze_document(doc.document_id)
+                
+            # Document Risk Engine Phase
+            self._update_state(job, "processing", "risk")
+            from backend.app.services.risk import DocumentRiskEngine
+            risk_svc = DocumentRiskEngine(self.db)
+            for doc in docs:
+                risk_svc.analyze_document(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase9_complete"
+            job.stage = "phase10_complete"
             job.progress_pct = 100
             self.db.commit()
             
