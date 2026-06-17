@@ -58,10 +58,17 @@ class JobOrchestrator:
             ela_svc = ELAForensicsService(self.db)
             for doc in docs:
                 ela_svc.analyze_document(doc.document_id)
+                
+            # Noise Forensics Phase
+            self._update_state(job, "processing", "noise")
+            from backend.app.services.noise import NoiseForensicsService
+            noise_svc = NoiseForensicsService(self.db)
+            for doc in docs:
+                noise_svc.analyze_document(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase6_complete"
+            job.stage = "phase7_complete"
             job.progress_pct = 100
             self.db.commit()
             

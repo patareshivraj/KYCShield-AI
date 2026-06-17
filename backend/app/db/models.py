@@ -53,6 +53,7 @@ class Document(Base):
     ocr_result = relationship("OCRResult", back_populates="document", uselist=False)
     forensic_result = relationship("ForensicResult", back_populates="document", uselist=False)
     ela_result = relationship("ELAResult", back_populates="document", uselist=False)
+    noise_result = relationship("NoiseResult", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -219,4 +220,58 @@ class ELAFinding(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     ela_result = relationship("ELAResult", back_populates="findings")
+
+class NoiseResult(Base):
+    __tablename__ = "noise_results"
+    
+    noise_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    document = relationship("Document", back_populates="noise_result")
+    maps = relationship("NoiseMap", back_populates="noise_result")
+    regions = relationship("NoiseRegion", back_populates="noise_result")
+    findings = relationship("NoiseFinding", back_populates="noise_result")
+
+class NoiseMap(Base):
+    __tablename__ = "noise_maps"
+    
+    map_id = Column(String, primary_key=True, default=generate_uuid)
+    noise_id = Column(String, ForeignKey("noise_results.noise_id"))
+    page_index = Column(Integer)
+    map_type = Column(String)  # noise | texture | sharpness
+    map_image_ref = Column(String)
+    
+    noise_result = relationship("NoiseResult", back_populates="maps")
+
+class NoiseRegion(Base):
+    __tablename__ = "noise_regions"
+    
+    region_id = Column(String, primary_key=True, default=generate_uuid)
+    noise_id = Column(String, ForeignKey("noise_results.noise_id"))
+    page_index = Column(Integer)
+    bbox = Column(JSON)  # [x, y, w, h]
+    region_type = Column(String) # noise_anomaly, texture_anomaly, sharpness_anomaly
+    area = Column(Float)
+    mean_value = Column(Float)
+    max_value = Column(Float)
+    
+    noise_result = relationship("NoiseResult", back_populates="regions")
+
+class NoiseFinding(Base):
+    __tablename__ = "noise_findings"
+    
+    finding_id = Column(String, primary_key=True, default=generate_uuid)
+    noise_id = Column(String, ForeignKey("noise_results.noise_id"))
+    signal_id = Column(String, default="S07")
+    finding_type = Column(String)
+    severity = Column(String)
+    confidence = Column(Float)
+    bbox = Column(JSON)
+    region_statistics = Column(JSON)
+    supporting_signals = Column(JSON)
+    heatmap_reference = Column(String)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    noise_result = relationship("NoiseResult", back_populates="findings")
 
