@@ -65,10 +65,17 @@ class JobOrchestrator:
             noise_svc = NoiseForensicsService(self.db)
             for doc in docs:
                 noise_svc.analyze_document(doc.document_id)
+                
+            # Compression Forensics Phase
+            self._update_state(job, "processing", "compression")
+            from backend.app.services.compression import CompressionForensicsService
+            comp_svc = CompressionForensicsService(self.db)
+            for doc in docs:
+                comp_svc.analyze_document(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase7_complete"
+            job.stage = "phase8_complete"
             job.progress_pct = 100
             self.db.commit()
             
