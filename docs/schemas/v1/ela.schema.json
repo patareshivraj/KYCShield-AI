@@ -1,0 +1,31 @@
+{
+  "$id": "https://kycshield.ai/schemas/v1/ela.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ELAResult",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "ela_id": { "type": "string", "format": "uuid" },
+    "document_id": { "type": "string", "format": "uuid" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_id": { "type": "string" },
+          "finding_type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["INFO", "LOW", "MEDIUM", "HIGH"] },
+          "bbox": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "region_statistics": { "type": "object" },
+          "heatmap_reference": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "required": ["signal_id", "finding_type", "severity", "bbox", "confidence", "region_statistics", "heatmap_reference"]
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schema_version", "ela_id", "document_id", "findings", "created_at"],
+  "additionalProperties": false
+}

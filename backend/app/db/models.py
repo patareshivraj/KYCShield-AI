@@ -52,6 +52,7 @@ class Document(Base):
     classification = relationship("DocumentClassification", back_populates="document", uselist=False)
     ocr_result = relationship("OCRResult", back_populates="document", uselist=False)
     forensic_result = relationship("ForensicResult", back_populates="document", uselist=False)
+    ela_result = relationship("ELAResult", back_populates="document", uselist=False)
 
 class DocumentPage(Base):
     __tablename__ = "document_pages"
@@ -166,4 +167,56 @@ class ForensicFinding(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     forensic_result = relationship("ForensicResult", back_populates="findings")
+
+class ELAResult(Base):
+    __tablename__ = "ela_results"
+    
+    ela_id = Column(String, primary_key=True, default=generate_uuid)
+    document_id = Column(String, ForeignKey("documents.document_id"), unique=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    document = relationship("Document", back_populates="ela_result")
+    heatmaps = relationship("ELAHeatmap", back_populates="ela_result")
+    regions = relationship("ELARegion", back_populates="ela_result")
+    findings = relationship("ELAFinding", back_populates="ela_result")
+
+class ELAHeatmap(Base):
+    __tablename__ = "ela_heatmaps"
+    
+    heatmap_id = Column(String, primary_key=True, default=generate_uuid)
+    ela_id = Column(String, ForeignKey("ela_results.ela_id"))
+    page_index = Column(Integer)
+    ela_image_ref = Column(String)
+    heatmap_image_ref = Column(String)
+    
+    ela_result = relationship("ELAResult", back_populates="heatmaps")
+
+class ELARegion(Base):
+    __tablename__ = "ela_regions"
+    
+    region_id = Column(String, primary_key=True, default=generate_uuid)
+    ela_id = Column(String, ForeignKey("ela_results.ela_id"))
+    page_index = Column(Integer)
+    bbox = Column(JSON)  # [x, y, w, h]
+    area = Column(Float)
+    mean_intensity = Column(Float)
+    max_intensity = Column(Float)
+    
+    ela_result = relationship("ELAResult", back_populates="regions")
+
+class ELAFinding(Base):
+    __tablename__ = "ela_findings"
+    
+    finding_id = Column(String, primary_key=True, default=generate_uuid)
+    ela_id = Column(String, ForeignKey("ela_results.ela_id"))
+    signal_id = Column(String, default="S06")
+    finding_type = Column(String)
+    severity = Column(String)
+    confidence = Column(Float)
+    bbox = Column(JSON)
+    region_statistics = Column(JSON)
+    heatmap_reference = Column(String)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    ela_result = relationship("ELAResult", back_populates="findings")
 

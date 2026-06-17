@@ -51,10 +51,17 @@ class JobOrchestrator:
             forensics_svc = MetadataForensicsService(self.db)
             for doc in docs:
                 forensics_svc.analyze_document(doc.document_id)
+                
+            # ELA Phase
+            self._update_state(job, "processing", "ela")
+            from backend.app.services.ela import ELAForensicsService
+            ela_svc = ELAForensicsService(self.db)
+            for doc in docs:
+                ela_svc.analyze_document(doc.document_id)
             
             # Job Complete
             job.status = "analyzed"
-            job.stage = "phase5_complete"
+            job.stage = "phase6_complete"
             job.progress_pct = 100
             self.db.commit()
             
