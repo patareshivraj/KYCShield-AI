@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from backend.app.api.routes import upload, status
+from backend.app.api.routes import upload, status, investigation
 from backend.app.db.session import engine, Base
 from backend.app.core.config import settings
 from backend.app.core.exceptions import KYCShieldException
@@ -33,3 +33,4 @@ async def kycshield_exception_handler(request: Request, exc: KYCShieldException)
 
 app.include_router(upload.router, prefix=settings.API_V1_STR + "/applicants", tags=["applicants"])
 app.include_router(status.router, prefix=settings.API_V1_STR + "/jobs", tags=["jobs"])
+app.include_router(investigation.router, prefix=settings.API_V1_STR + "/investigation", tags=["investigation"])
